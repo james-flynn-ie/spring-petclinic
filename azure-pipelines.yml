@@ -13,6 +13,9 @@ pool:
 # see: https://docs.microsoft.com/en-us/azure/devops/pipelines/process/run-number?view=azure-devops&tabs=yaml
 name: $(Build.DefinitionName).$(SourceBranchName).$(Date:yyyyMMdd)$(Rev:.r)
 
+pr:
+  - main # Only trigger build for Pull Requests targetting 'main' branch. Otherwise, builds both source and target branches.
+
 stages:
   - stage: CI_CDelivery
     displayName: 'Continuous Integration and Delivery'
