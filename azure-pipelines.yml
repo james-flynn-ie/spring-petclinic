@@ -8,13 +8,13 @@ pool:
   # see: https://docs.microsoft.com/en-us/azure/devops/pipelines/agents/hosted?view=azure-devops&tabs=yaml
   vmImage: ubuntu-20.04
 
-# Adding extra information into build name, to make it easier to identify builds. 
-# It can be called using '$(Build.BuildNumber)'
+# Adding extra information into build name, to make it easier to identify builds on Azure DevOps build dashboard. 
+# It can be called within pipeline using '$(Build.BuildNumber)'
 # see: https://docs.microsoft.com/en-us/azure/devops/pipelines/process/run-number?view=azure-devops&tabs=yaml
 name: $(Build.DefinitionName).$(SourceBranchName).$(Date:yyyyMMdd)$(Rev:.r)
 
 pr:
-  - main # Only trigger build for Pull Requests targetting 'main' branch. Otherwise, builds both source and target branches.
+  - main # Only trigger build for Pull Requests which target 'main' branch. Otherwise, it runs 2 builds (source and target) for each PR.
 
 stages:
   - stage: CI_CDelivery
@@ -42,7 +42,6 @@ stages:
           ${{ if ne(variables['Build.Reason'], 'PullRequest') }}:
             extraProperties: |
               sonar.branch.name=$(Build.SourceBranchName)
-              sonar.language=java
               sonar.projectKey=james-flynn-ie_spring-petclinic
           ${{ if eq(variables['Build.Reason'], 'PullRequest') }}:
             extraProperties: |
@@ -57,9 +56,9 @@ stages:
         inputs:
           mavenPomFile: 'pom.xml'
           # 'clean install sonar:sonar' is required to run the Sonarcloud scan ('package' creates the JAR).
-          # see: https://www.coachdevops.com/2020/04/how-to-integrate-sonarqube-in-azure.html
+          # See: https://www.coachdevops.com/2020/04/how-to-integrate-sonarqube-in-azure.html
           goals: 'clean install sonar:sonar package'
-          publishJUnitResults: true
+          publishJUnitResults: true # Publishes test reports in pipeline run report on Azure DevOps UI.
           testResultsFiles: '**/TEST-*.xml'
           testRunTitle: '$(Build.BuildNumber)'
           javaHomeOption: 'JDKVersion'
